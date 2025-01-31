@@ -1,0 +1,23 @@
+name: "Barnashus"
+
+sitemap_url: "https://www.barnashus.no/sitemap.xml?batch=0&language=nb-no"
+
+ignore_patterns:
+  - "/blog/"
+  - "/category/"
+
+selectors:
+  product_name:
+    selector: '//*[@id="content-container"]/div/main/div[2]/div[2]/div[1]/div[2]/section/div[1]/div/h1/text()'
+    join_text: false
+
+  description:
+    selector: '//*[@id="content-container"]/div/main/div[2]/div[2]/div[2]/div/div[1]/div[1]/div/div/p/text()'
+    join_text: false  # If you expect multiple <p> or nested text nodes
+
+  price:
+    selector: '//*[@id="container"]/div/div[5]/div/div/span/span[1]/text()'
+    # If you only need the single text node, no need to join
+
+  brand:
+    selector: '//*[@id="content-container"]/div/main/div[1]/ul/li[2]/a/text()'

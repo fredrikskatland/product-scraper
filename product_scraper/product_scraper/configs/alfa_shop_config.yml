@@ -1,0 +1,58 @@
+# shop1.yaml
+
+name: "Alfa"
+
+# The main sitemap location:
+sitemap_url: "https://www.alfa.no/sitemap_products_1.xml?from=5271005626523&to=8358727549083"
+
+# Optional: If you have more sitemaps (some sites have multiple sitemaps)
+# sitemap_urls:
+#   - "https://www.shop1.com/sitemap1.xml"
+#   - "https://www.shop1.com/sitemap2.xml"
+
+# You can also include filtering rules to skip certain URLs
+# For example, ignoring category pages or blog pages:
+ignore_patterns:
+  - "/blog/"
+  - "/category/"
+  - "web_widget/"
+
+# Selectors to parse each product detail page
+selectors:
+  product_name:
+    selector: "h1.product-single__title::text"
+    join_text: false  # or omit if you want
+
+  description:
+    selector: "div.product-details__item--description p *::text"
+    join_text: true
+
+  price: "span.product__price span.money::text"
+  brand: "h1.product-single__title::text"
+
+extras:
+  color:
+    selector: "//span[@class='color']/text()"
+    join_text: false
+  size:
+    selector: "span.size::text"
+    join_text: false
+  usage_areas:
+    selector: "div.product-details__item ul.product-details__list--inline li span::text"
+    join_text: true
+  weight:
+    selector: "div.product-details__item ul.product-details__list li:contains('Vekt') span::text"
+    join_text: true
+  height:
+    selector: "div.product-details__item ul.product-details__list li:contains('Skafthøyde') span::text"
+    join_text: true
+  fit:
+    selector: "div.product-details__item ul.product-details__list li:contains('Passform') span::text"
+    join_text: true
+  material:
+    selector: "div.product-details__item ul.product-details__list li:contains('Materiale') span::text"
+    join_text: true
+  sole:
+    selector: "div.product-details__item ul.product-details__list li:contains('Såle') span::text"
+    join_text: true
+

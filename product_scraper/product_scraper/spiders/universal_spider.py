@@ -20,24 +20,27 @@ class UniversalSpider(scrapy.Spider):
             self.config = yaml.safe_load(f)
 
         self.shop_name = self.config.get("name", "unknown_shop")
-        self.sitemap_url = self.config.get("sitemap_url")
-        if not self.sitemap_url:
-            raise ValueError("No 'sitemap_url' found in config.")
+        
+        # Try to get a list of sitemap URLs; if not provided, fallback to a single sitemap_url.
+        self.sitemap_urls = self.config.get("sitemap_urls")
+        if not self.sitemap_urls:
+            sitemap_url = self.config.get("sitemap_url")
+            if not sitemap_url:
+                raise ValueError("No 'sitemap_url' or 'sitemap_urls' found in config.")
+            self.sitemap_urls = [sitemap_url]
 
         # Optional ignore patterns
         self.ignore_patterns = self.config.get("ignore_patterns", [])
 
     def start_requests(self):
         """
-        1) Send a request to fetch the sitemap_url.
-        2) We'll parse the returned XML in parse_sitemap.
+        For each sitemap URL provided, send a request to fetch it.
         """
-        
-
-        yield scrapy.Request(
-            url=self.sitemap_url,
-            callback=self.parse_sitemap
-        )
+        for url in self.sitemap_urls:
+            yield scrapy.Request(
+                url=url,
+                callback=self.parse_sitemap
+            )
 
     def parse_sitemap(self, response):
         sel = Selector(text=response.text, type="xml")
@@ -51,16 +54,6 @@ class UniversalSpider(scrapy.Spider):
             yield scrapy.Request(
                 url=loc
                 , callback=self.parse_product
-                , cookies = {
-                    # The key is the cookie name, the value is the cookie value
-                    "CookieInformationConsent": '{"website_uuid":"52df4073-8d76-4ae7-8ae2-056b80c5f4b5","timestamp":"2025-01-30T21:22:48.268Z","consent_url":"https://www.barnashus.no/voksi/breeze-light-vognpose-softgrape-fields","consent_website":"barnashus.no","consent_domain":"www.barnashus.no","user_uid":"b6d439ef-8095-4104-a466-62189ff83d34","consents_approved":["cookie_cat_necessary","cookie_cat_functional","cookie_cat_statistic","cookie_cat_marketing","cookie_cat_unclassified"],"consents_denied":[],"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"}'
-                }
-                , meta={
-                    "playwright": True,
-                    "playwright_page_methods": [
-                        PageMethod("wait_for_selector", 'p'), 
-                    ]
-                }
                 )
 
     def parse_product(self, response):
@@ -118,16 +111,15 @@ class UniversalSpider(scrapy.Spider):
             return self.extract_first(response, sel)
 
     def extract_first(self, response, selector):
-        """
-        Utility: If '::' in the selector -> CSS, else XPath.
-        Return first result or None.
-        """
         if not selector:
             return None
-        if '::' in selector:
-            return response.css(selector).get(default="").strip() or None
-        else:
+        s = selector.strip()
+        # If the selector starts with '/', '.', or '(', treat it as XPath.
+        if s[0] in ('/', '.', '('):
             return response.xpath(selector).get(default="").strip() or None
+        else:
+            return response.css(selector).get(default="").strip() or None
+
 
     def extract_all(self, response, selector):
         """

@@ -116,8 +116,8 @@ def build_metadata(product: Product) -> dict:
         "shop": product.shop,
         "url": product.url,
         "product_name": product.product_name,
-        "price": product.price,
-        "brand": product.brand,
+        #"price": product.price,
+        #"brand": product.brand,
         "description": product.description,
     }
     # Merge extras into metadata if you want them at top level
